@@ -1,0 +1,25 @@
+﻿@{
+    ViewBag.Title = "Index";
+}
+
+<h2>Demo upload</h2>
+<input type="file" class="blobify" data-container="files" />
+<input type="file" class="blobify" data-template="detailed-template" data-container="files" />
+
+@section Scripts {
+<!-- Handlebars.js templates for the plugin -->
+@Scripts.Render("~/Scripts/handlebars.js")
+
+<!-- blobify plugin -->
+@Scripts.Render("~/Scripts/blobify/blobify.plugin.js")
+
+<!-- Initializing the plugin -->
+<script type="text/javascript">
+    $(document).ready(function () {
+        $(".blobify").blobify({ accountName: "test", templatesLocation: "@Url.Content("~/Scripts/blobify/blobify.templates.js")" });
+    });
+</script>
+}
+
+
+
