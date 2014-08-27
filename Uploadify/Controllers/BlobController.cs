@@ -26,12 +26,17 @@ namespace Uploadify.Controllers
             {
                 return Request.CreateErrorResponse(HttpStatusCode.BadRequest, e.Message);
             }
-    
+
             // Parse the connection string and return a reference to the storage account
             var storageAccount = CloudStorageAccount.Parse(ConfigurationManager.ConnectionStrings["StorageConnectionString"].ConnectionString);
 
             // Create the blob client object.
             var blobClient = storageAccount.CreateCloudBlobClient();
+
+            // Enable CORS to allow the javascript code to directly talk to our blob storage
+            // For better security, we can explicitly set the allowed origins to the domain hosting our javascript
+            // to ensure that only our domain is able to upload to the blob storage
+            EnableCORS(blobClient, allowedOrigins: "*");
 
             // Get a reference to the container to use, and create it if it does not exist
             var container = blobClient.GetContainerReference(containerName);
@@ -40,7 +45,7 @@ namespace Uploadify.Controllers
             // Set the expiry time and permissions for the container
             var sasConstraints = new SharedAccessBlobPolicy
             {
-                SharedAccessStartTime = DateTime.UtcNow.AddMinutes(5), // To account for time differences
+                SharedAccessStartTime = DateTime.UtcNow.AddMinutes(-5), // To account for time differences
                 SharedAccessExpiryTime = DateTime.UtcNow.AddHours(4),
                 Permissions = SharedAccessBlobPermissions.Write | SharedAccessBlobPermissions.List
             };
@@ -49,14 +54,42 @@ namespace Uploadify.Controllers
             string sasContainerToken = container.GetSharedAccessSignature(sasConstraints);
 
             // Creat the URI to be return to the client that will be used to write to blob storage.
-            var response = new { 
+            var response = new
+            {
                 sas = sasContainerToken,
-                url = string.Format("{0}/{1}",container.Uri,blobName),
+                url = string.Format("{0}/{1}", container.Uri, blobName),
                 upload_destination = string.Format("{0}/{1}{2}", container.Uri, blobName, sasContainerToken)
             };
 
             //Return the URI string for the container, including the SAS token.
             return Request.CreateResponse(response);
+        }
+
+        private static void EnableCORS(CloudBlobClient blobClient, string allowedOrigins = "*")
+        {
+            // Get current properties
+            var currentProperties = blobClient.GetServiceProperties();
+
+            // Ensure we're using a version that supports CORS (2013 does, but let's use the latest)
+            currentProperties.DefaultServiceVersion = "2014-02-14"; // "2013-08-15"; //"2012-02-12"; // "2011-08-18"; // null;
+            blobClient.SetServiceProperties(currentProperties);
+
+            
+            //Add a wide open rule to allow uploads
+            var ruleWideOpenWriter = new Microsoft.WindowsAzure.Storage.Shared.Protocol.CorsRule()
+            {
+                AllowedHeaders = { "*" },
+                AllowedOrigins = { allowedOrigins }, // urls to allow requests from
+                AllowedMethods =
+                    Microsoft.WindowsAzure.Storage.Shared.Protocol.CorsHttpMethods.Options |
+                    Microsoft.WindowsAzure.Storage.Shared.Protocol.CorsHttpMethods.Post |
+                    Microsoft.WindowsAzure.Storage.Shared.Protocol.CorsHttpMethods.Put |
+                    Microsoft.WindowsAzure.Storage.Shared.Protocol.CorsHttpMethods.Merge,
+                ExposedHeaders = { "*" },
+                MaxAgeInSeconds = (int)TimeSpan.FromDays(5).TotalSeconds
+            };
+            currentProperties.Cors.CorsRules.Add(ruleWideOpenWriter);
+            blobClient.SetServiceProperties(currentProperties);
         }
 
         /// <summary>
@@ -68,9 +101,9 @@ namespace Uploadify.Controllers
             if (string.IsNullOrWhiteSpace(containerName))
                 throw new ArgumentException("Container names cannot be empty.");
 
-            if(containerName.Length < 3 || containerName.Length > 63)
+            if (containerName.Length < 3 || containerName.Length > 63)
                 throw new ArgumentException("Container names must be from 3 through 63 characters long.");
-            
+
             if (!Regex.IsMatch(containerName, @"^([a-z0-9\-])+$"))
                 throw new ArgumentException("Container names must start with a letter or number, and can contain only lowercase letters, numbers, and the dash (-) character.");
 
