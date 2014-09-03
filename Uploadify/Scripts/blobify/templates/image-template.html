@@ -1,0 +1,24 @@
+﻿<div class="thumbnail">
+    <div style="height:{{imageHeight}}px; width:{{imageWidth}}px; margin:0 auto; margin-bottom:5px;">
+        <svg xmlns="http://www.w3.org/2000/svg" width="{{imageWidth}}" height="{{imageHeight}}">
+            <rect width="{{imageWidth}}" height="{{imageHeight}}" fill="#eee" />
+            <text text-anchor="middle" x="{{imageTextAnchorX}}" y="{{imageTextAnchorY}}" style="fill:#aaa;font-weight:bold;font-size:12px;font-family:Arial,Helvetica,sans-serif;dominant-baseline:central">{{imageWidth}} x {{imageHeight}}</text>
+        </svg>
+        <img src="" style="height:{{imageHeight}}px; width: {{imageWidth}}px; margin-top:5px; top:0; position:absolute;" data-role="image-preview" />
+    </div>
+    <div class="progress" style="margin-top:5px; width:280px; margin-bottom:0;">
+        <div class="progress-bar progress-bar-success progress-bar-striped active" role="progressbar" style="width: 0">
+            <span data-role="statusMessage" />
+        </div>
+    </div>
+    <div class="caption">
+        <h3 style="margin-top:5px;">{{title}}</h3>
+        <p>{{message}}</p>
+        <div class="prettyUpload">
+            <a class="btn btn-default" data-role="browse-button">Browse</a>
+            <a class="btn btn-primary disabled" data-role="upload-button">Upload</a>
+            <span data-role="filename"></span>
+        </div>
+    </div>
+    <input type="hidden" data-role="post-filelocation" name="{{postFileLocation}}" />
+</div>

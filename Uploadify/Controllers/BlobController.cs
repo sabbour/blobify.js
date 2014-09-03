@@ -17,6 +17,9 @@ namespace Uploadify.Controllers
         [ActionName("obtainsas")]
         public HttpResponseMessage ObtainSAS(string containerName, string blobName)
         {
+            // In a real situation, you wouldn't accept just any container name and you would usually
+            // create containers and blobs based on some business logic rules
+
             // Sanity checks
             try
             {
@@ -58,6 +61,7 @@ namespace Uploadify.Controllers
             {
                 sas = sasContainerToken,
                 url = string.Format("{0}/{1}", container.Uri, blobName),
+                fileName = blobName,
                 upload_destination = string.Format("{0}/{1}{2}", container.Uri, blobName, sasContainerToken)
             };
 
@@ -75,7 +79,7 @@ namespace Uploadify.Controllers
             blobClient.SetServiceProperties(currentProperties);
 
             
-            //Add a wide open rule to allow uploads
+            //Add a wide open rule to allow uploads if not exists
             var ruleWideOpenWriter = new Microsoft.WindowsAzure.Storage.Shared.Protocol.CorsRule()
             {
                 AllowedHeaders = { "*" },
@@ -88,7 +92,11 @@ namespace Uploadify.Controllers
                 ExposedHeaders = { "*" },
                 MaxAgeInSeconds = (int)TimeSpan.FromDays(5).TotalSeconds
             };
-            currentProperties.Cors.CorsRules.Add(ruleWideOpenWriter);
+
+            // Only if the rule doesn't exist (hacky)
+            if(!currentProperties.Cors.CorsRules.Any( rule => rule.AllowedHeaders.First() == "*"))
+                currentProperties.Cors.CorsRules.Add(ruleWideOpenWriter);
+
             blobClient.SetServiceProperties(currentProperties);
         }
 

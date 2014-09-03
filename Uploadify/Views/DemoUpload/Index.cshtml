@@ -3,20 +3,23 @@
 }
 
 <h2>Demo upload</h2>
-<input type="file" class="blobify" data-container="files" />
-<input type="file" class="blobify" data-template="detailed-template" data-container="files" />
+<input id="fileUpload" type="file" class="blobify" data-container="files" data-fieldname="fileupload1" />
+<input id="fileUploadDetailed" type="file" class="blobify" data-template="detailed-template" data-container="files" data-fieldname="fileupload2" />
+<input id="fileUploadImage" type="file" class="blobify" data-template="image-template" data-container="images" data-fieldname="fileupload3" data-image-width="320" data-image-height="240" data-title="Test" data-message="Message"/>
 
 @section Scripts {
-<!-- Handlebars.js templates for the plugin -->
-@Scripts.Render("~/Scripts/handlebars.js")
+
+<!-- Load the required libs for the plugin -->
+@Scripts.Render("~/Scripts/blobify/lib/handlebars.js")
+@Scripts.Render("~/Scripts/blobify/lib/async.js")
 
 <!-- blobify plugin -->
-@Scripts.Render("~/Scripts/blobify/blobify.plugin.js")
+@Scripts.Render("~/Scripts/blobify/blobify.widget.js")
 
 <!-- Initializing the plugin -->
 <script type="text/javascript">
     $(document).ready(function () {
-        $(".blobify").blobify({ accountName: "test", templatesLocation: "@Url.Content("~/Scripts/blobify/blobify.templates.js")" });
+        $(".blobify").blobify({ accountName: "test" });
     });
 </script>
 }
