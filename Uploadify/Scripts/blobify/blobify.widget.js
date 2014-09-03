@@ -1,4 +1,18 @@
-﻿(function ($) {
+﻿/*
+ * Azure Blobify by Ahmed Sabbour
+ * A plugin that allows you to automagically transfer input fields into fields
+ * into fields that automatically upload into Azure Blob Storage
+ * 
+ * Plugin requirements:
+ * jQuery
+ * jQuery UI Core
+ * jQuery UI Widget Core
+ * Handlebars.js
+ * async.js
+ * 
+ */
+
+(function ($) {
 
     // Private "static" variable to store and cache the loaded templates
     // intended to be shared across plugin "instances"
@@ -323,7 +337,7 @@
             self.statusMessage.text(message);
         },
 
-        // Helper function to generate properly padded block ids, since they need to be the same length
+        // Helper function to generate properly padded block ids, since they need to be the same length and base 64 encoded
         _pad: function (number, length) {
             var str = '' + number;
             while (str.length < length) {
@@ -331,8 +345,6 @@
             }
             return str;
         }
-
-
 
     });
 })(jQuery);
